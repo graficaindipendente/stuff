@@ -5,7 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stuff</title>
-    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/assets/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/assets/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -63,13 +79,6 @@
             flex-direction: row;
         }
 
-        .card img {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            cursor: pointer;
-            border-radius: 8px;
-        }
 
         .card-content {
             padding: 15px;
@@ -120,7 +129,7 @@
 
 <body>
     <h2>
-        <img src="assets/apple-touch-icon-57x57.png" alt=""> Stuff
+        <img src="assets/apple-icon-57x57.png" alt=""> Stuff
         <div class="filter-buttons" id="filterButtons"></div>
     </h2>
 
@@ -138,48 +147,77 @@
 
 
 
-        function renderCards(data) {
-            const container = document.getElementById('card-container');
-            container.innerHTML = '';
+            function renderCards(data) {
+                const container = document.getElementById('card-container');
+                container.innerHTML = '';
 
-            [...data].reverse().forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
+                [...data].reverse().forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
 
-                const img = document.createElement('img');
-                img.src = item['Foto 1'] || '';
-                img.alt = 'Foto principale';
+                    const img = document.createElement('img');
+                    img.src = item['Foto 1'] || '';
+                    img.alt = 'Foto principale';
 
-                const content = document.createElement('div');
-                content.className = 'card-content';
+                    const content = document.createElement('div');
+                    content.className = 'card-content';
 
-                const subtitle = document.createElement('h4');
-                subtitle.textContent = item['Categoria'] || '';
+                    const subtitle = document.createElement('h4');
+                    subtitle.textContent = item['Categoria'] || '';
 
-                const title = document.createElement('h3');
-                title.textContent = item['Titolo'] || '';
+                    // Crea il link con titolo
+                    const titleLink = document.createElement('a');
+                    titleLink.href = item['URL'] || '#';
+                    titleLink.target = '_blank';
+                    titleLink.rel = 'noopener noreferrer';
+                    titleLink.style.textDecoration = 'none';
+                    titleLink.style.color = 'inherit';
+                    titleLink.style.display = 'flex';           // per mettere favicon e testo vicini
+                    titleLink.style.alignItems = 'center';
+                    titleLink.style.gap = '5px';                // spaziatura tra icona e testo
 
-                const url = document.createElement('p');
-                url.textContent = item['URL'] || '';
+                    // Favicon
+                    let domain;
+                    try {
+                        domain = (new URL(item['URL'])).hostname;
+                    } catch {
+                        domain = '';
+                    }
+                    const favicon = document.createElement('img');
+                    favicon.src = `https://www.google.com/s2/favicons?domain=${domain}`;
+                    favicon.width = 20;
+                    favicon.height = 20;
+                    favicon.alt = 'favicon';
+                    favicon.style.flexShrink = '0'; // evita che si deformi
 
-                const edition = document.createElement('h3');
-                edition.textContent = item['Edizione'] || '';
+                    // Titolo
+                    const title = document.createElement('h3');
+                    title.textContent = item['Titolo'] || '';
+                    title.style.margin = 0;
 
-                const desc = document.createElement('p');
-                desc.textContent = item['Descrizione'] || '';
+                    // Aggiungi favicon e titolo dentro il link
+                    titleLink.appendChild(favicon);
+                    titleLink.appendChild(title);
 
-                img.addEventListener('click', () => openModalWithDetails(item));
+                    const edition = document.createElement('p');
+                    edition.textContent = item['Annotazione'] || '';
 
-                content.appendChild(subtitle);
-                content.appendChild(title);
-                content.appendChild(edition);
-                content.appendChild(edition);
-                content.appendChild(url);
-                content.appendChild(desc);
-                card.appendChild(content);
-                container.appendChild(card);
-            });
-        }
+                    const desc = document.createElement('p');
+                    desc.textContent = item['Descrizione'] || '';
+
+                    img.addEventListener('click', () => openModalWithDetails(item));
+
+                    content.appendChild(subtitle);
+                    content.appendChild(titleLink);   // aggiungi il link con favicon e titolo
+                    content.appendChild(edition);
+                    content.appendChild(desc);
+
+                    card.appendChild(content);
+                    container.appendChild(card);
+                });
+            }
+
+
 
         function createFilterButtons(data) {
             const container = document.getElementById('filterButtons');
