@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stuff</title>
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        .filter-buttons {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-buttons button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: none;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-buttons button.active {
+            background-color: #003d6e;
+            color: white;
+        }
+
+        .filter-buttons button.csv-link {
+            background-color: #003d6e;
+            color: white;
+            font-weight: bold;
+        }
+
+        .filter-buttons input[type="text"] {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: row;
+        }
+
+        .card img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .card-content {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        h1 {
+            font-size: 1.8em;
+            margin: 0 15px 0;
+            color: #1b1b1b;
+        }
+        h3 {
+            font-size: 1.2em;
+            margin: 0;
+            color: #1b1b1b;
+        }
+
+        .card h4 {
+            font-size: 0.6em;
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        h4 {
+            font-size: 0.6em;
+            margin: 5px 30px;
+            color: #666;
+        }
+
+        .card p {
+            margin: 10px 0 0;
+            font-size: 0.7em;
+            color: #313131;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <h2>
+        <img src="assets/apple-touch-icon-57x57.png" alt=""> Stuff
+        <div class="filter-buttons" id="filterButtons"></div>
+    </h2>
+
+    <div class="grid" id="card-container"></div>
+
+    <!-- Modale dettagli -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQR1L1--vgUwXs_TwGYEss0R1J0w9lR8cw5mTetChagsGnA3dUUwGGR9uTg_yWtWJoSDk3P2LS325kn/pub?gid=0&single=true&output=csv';
+        const csvSheetUrl = 'https://docs.google.com/spreadsheets/d/1056yb-ITUErMVhaTgbHMEWBocsWII_3MpJ99OVQ4OBw/edit?gid=0#gid=0';
+
+        let allData = [];
+
+
+
+        function renderCards(data) {
+            const container = document.getElementById('card-container');
+            container.innerHTML = '';
+
+            [...data].reverse().forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const img = document.createElement('img');
+                img.src = item['Foto 1'] || '';
+                img.alt = 'Foto principale';
+
+                const content = document.createElement('div');
+                content.className = 'card-content';
+
+                const subtitle = document.createElement('h4');
+                subtitle.textContent = item['Categoria'] || '';
+
+                const title = document.createElement('h3');
+                title.textContent = item['Titolo'] || '';
+
+                const url = document.createElement('p');
+                url.textContent = item['URL'] || '';
+
+                const edition = document.createElement('h3');
+                edition.textContent = item['Edizione'] || '';
+
+                const desc = document.createElement('p');
+                desc.textContent = item['Descrizione'] || '';
+
+                img.addEventListener('click', () => openModalWithDetails(item));
+
+                content.appendChild(subtitle);
+                content.appendChild(title);
+                content.appendChild(edition);
+                content.appendChild(edition);
+                content.appendChild(url);
+                content.appendChild(desc);
+                card.appendChild(content);
+                container.appendChild(card);
+            });
+        }
+
+        function createFilterButtons(data) {
+            const container = document.getElementById('filterButtons');
+            const subtitles = [...new Set(data.map(item => item['Keyword']).filter(Boolean))].sort();
+
+            const allBtn = document.createElement('button');
+            allBtn.textContent = 'Tutti';
+            allBtn.classList.add('active');
+            allBtn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+                allBtn.classList.add('active');
+          renderCards(allData);
+            });
+            container.appendChild(allBtn);
+
+/*             const newBtn = document.createElement('button');
+            newBtn.textContent = 'Novità';
+            newBtn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+                newBtn.classList.add('active');
+                const latest = [...allData].reverse().slice(0, 21);
+                renderCards(latest);
+            });
+            container.appendChild(newBtn); */
+
+            subtitles.forEach(sub => {
+                const btn = document.createElement('button');
+                btn.textContent = sub;
+                btn.addEventListener('click', () => filterBySubtitle(sub, btn));
+                container.appendChild(btn);
+            });
+
+            const csvBtn = document.createElement('button');
+            csvBtn.textContent = 'CSV';
+            csvBtn.className = 'csv-link';
+            csvBtn.onclick = () => window.open(csvSheetUrl, '_blank');
+            container.appendChild(csvBtn);
+
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Cerca...';
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                const filtered = allData.filter(item => (item['Titolo'] || '').toLowerCase().includes(query));
+                renderCards(filtered);
+            });
+            container.appendChild(searchInput);
+        }
+
+        function filterBySubtitle(subtitle, clickedButton) {
+            document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            if (!subtitle) {
+                renderCards(allData);
+            } else {
+                const filtered = allData.filter(item => item['Keyword'] === subtitle);
+                renderCards(filtered);
+            }
+        }
+
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            complete: function (results) {
+                allData = results.data;
+                renderCards(allData);
+                createFilterButtons(allData);
+            }
+        });
+
+
+    </script>
+
+
+</body>
+
+</html>
